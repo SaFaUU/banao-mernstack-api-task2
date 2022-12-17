@@ -54,18 +54,22 @@ async function run() {
             res.send(result);
         })
         app.post('/create-user', async (req, res) => {
-            console.log(req.body)
+            // console.log(req.body)
             const user = {
                 userName: req.body.userName,
                 email: req.body.email,
             }
             bcrypt.genSalt(saltRounds, function (err, salt) {
-                bcrypt.hash(req.body.password, salt, function (err, hash) {
+                bcrypt.hash(req.body.password, salt, async function (err, hash) {
                     user.password = hash;
+                    const result = await usersCollection.insertOne(user)
+                    res.send(result);
                 });
             });
-            const result = await usersCollection.insertOne(user)
-            res.send(result);
+            // console.log(user)
+            // const result = await usersCollection.insertOne(user)
+            // res.send(result);
+
         })
         app.put('/reset-pass/:resetToken', async (req, res) => {
 
@@ -78,6 +82,7 @@ async function run() {
             if (!user) {
                 res.send({ "message": "Invalid reset token" })
             }
+            console.log(user)
             bcrypt.genSalt(saltRounds, function (err, salt) {
                 bcrypt.hash(req.body.password, salt, async function (err, hash) {
                     const filter = { _id: user._id }
